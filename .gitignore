@@ -51,6 +51,11 @@ CodeCoverage/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
 # Visual Studio
 .vs/
 

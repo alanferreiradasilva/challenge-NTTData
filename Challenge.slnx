@@ -6,6 +6,6 @@
     <Project Path="src/Challenge.Infrastructure/Challenge.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/Challenge.UnitTests/Challenge.UnitTests.csproj" />
+    <Project Path="tests/Challenge.Tests/Challenge.Tests.csproj" />
   </Folder>
 </Solution>
