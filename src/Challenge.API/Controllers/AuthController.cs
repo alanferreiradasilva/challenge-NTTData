@@ -1,4 +1,5 @@
-using Challenge.Application.Interfaces;
+using Challenge.Application.Auth.Queries.Login;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Challenge.API.Controllers;
@@ -7,17 +8,23 @@ namespace Challenge.API.Controllers;
 [Route("auth")]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly IMediator _mediator;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IMediator mediator)
     {
-        _authService = authService;
+        _mediator = mediator;
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var result = await _authService.LoginAsync(request.Email, request.Password);
+        var query = new LoginQuery
+        {
+            Email = request.Email,
+            Password = request.Password
+        };
+
+        var result = await _mediator.Send(query);
 
         if (result is null)
             return Unauthorized(new { message = "Invalid credentials." });

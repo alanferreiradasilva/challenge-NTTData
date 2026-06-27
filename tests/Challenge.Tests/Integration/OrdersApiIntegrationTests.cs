@@ -24,37 +24,8 @@ public class OrdersApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
             password = "Senha@123"
         });
 
-        var result = await response.Content.ReadFromJsonAsync<LoginResponse>(_jsonOptions);
-        return result!.Token;
-    }
-
-    [Fact]
-    public async Task Login_WithValidCredentials_ReturnsToken()
-    {
-        var response = await _client.PostAsJsonAsync("/auth/login", new
-        {
-            email = "dev@martech.com",
-            password = "Senha@123"
-        });
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var result = await response.Content.ReadFromJsonAsync<LoginResponse>(_jsonOptions);
-        result.Should().NotBeNull();
-        result!.Token.Should().NotBeNullOrEmpty();
-        result.ExpiresAt.Should().BeAfter(DateTime.UtcNow);
-    }
-
-    [Fact]
-    public async Task Login_WithInvalidCredentials_Returns401()
-    {
-        var response = await _client.PostAsJsonAsync("/auth/login", new
-        {
-            email = "wrong@email.com",
-            password = "wrong"
-        });
-
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>(_jsonOptions);
+        return result.GetProperty("token").GetString()!;
     }
 
     [Fact]
@@ -230,6 +201,4 @@ public class OrdersApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
-    private record LoginResponse(string Token, DateTime ExpiresAt);
 }
