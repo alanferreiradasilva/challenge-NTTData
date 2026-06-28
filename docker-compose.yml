@@ -16,5 +16,17 @@ services:
       - challenge_data:/app/data
     restart: unless-stopped
 
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    restart: unless-stopped
+
 volumes:
   challenge_data:
+  sonarqube_data:

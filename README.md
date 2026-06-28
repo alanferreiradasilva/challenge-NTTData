@@ -294,6 +294,50 @@ dotnet test tests/Challenge.Tests
 
 ---
 
+## Análise com SonarQube
+
+O SonarQube está configurado no `docker-compose.yml` (container `sonarqube` com banco H2 embutido, porta `9000`).
+
+### Iniciar o SonarQube
+
+```bash
+docker compose up -d sonarqube
+```
+
+Aguardar até o log mostrar `SonarQube is operational`:
+
+```bash
+docker compose logs sonarqube --tail 5
+```
+
+Acessar http://localhost:9000, logar com `admin` / `admin` e trocar a senha.
+
+### Gerar token de análise
+
+1. Avatar (canto superior direito) → **My Account** → **Security**
+2. Em **Generate Tokens**, digite um nome (ex: `challenge-token`) e clique **Generate**
+3. Copie o token gerado
+
+### Executar análise
+
+```bash
+# Instalar o scanner (uma vez)
+dotnet tool install --global dotnet-sonarscanner
+
+# Iniciar análise
+dotnet sonarscanner begin /k:"challenge-nttdata" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="SEU_TOKEN"
+
+# Compilar
+dotnet build src/Challenge.API/Challenge.API.csproj
+
+# Finalizar e enviar resultados
+dotnet sonarscanner end /d:sonar.login="SEU_TOKEN"
+```
+
+Resultados em http://localhost:9000/dashboard?id=challenge-nttdata.
+
+---
+
 ## Decisões Técnicas
 
 - **Records para DTOs/Commands/Queries**: Imutabilidade, `with` expressions, value equality para asserts em testes.
