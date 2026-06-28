@@ -21,8 +21,6 @@ EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-VOLUME /app/data
-
 COPY --from=build /app/publish .
 
 USER app

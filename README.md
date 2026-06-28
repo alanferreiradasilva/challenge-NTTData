@@ -84,7 +84,22 @@ docker compose up --build
 # A API estará disponível em http://localhost:5217
 ```
 
-O banco SQLite é persistido em um volume Docker (`challenge_data`).
+### Logs com Serilog
+
+Acompanhe os logs da API em tempo real:
+
+```bash
+docker compose logs api -f
+```
+
+Cada request/response é logado automaticamente com tempo de execução:
+
+```
+[23:14:24 INF] Handling CancelOrderCommand { OrderId: "2b9b2a04-..." }
+[23:14:25 INF] Handled CancelOrderCommand in 803ms
+```
+
+Para sair do modo follow, pressione `Ctrl+C`.
 
 ---
 

@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Challenge.Application.Orders.Commands.CancelOrder;
 
-public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
+public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Unit>
 {
     private readonly IOrderRepository _repository;
 
@@ -12,7 +12,7 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
         _repository = repository;
     }
 
-    public async Task Handle(CancelOrderCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(CancelOrderCommand request, CancellationToken cancellationToken)
     {
         var order = await _repository.GetByIdAsync(request.OrderId, cancellationToken)
             ?? throw new KeyNotFoundException($"Order with id {request.OrderId} not found.");
@@ -20,5 +20,7 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
         order.Cancel();
 
         await _repository.UpdateAsync(order, cancellationToken);
+
+        return Unit.Value;
     }
 }
