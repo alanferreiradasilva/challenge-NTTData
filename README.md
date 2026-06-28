@@ -8,8 +8,8 @@ Backend de um sistema de gestão de pedidos para e-commerce, construído com **.
 
 | Camada     | Tecnologias                                                                 |
 | ---------- | --------------------------------------------------------------------------- |
-| API        | ASP.NET Core Controllers, JWT Bearer, Scalar UI (OpenAPI)                   |
-| Application| MediatR (CQRS), FluentValidation, Pipeline Behaviors                        |
+| API        | ASP.NET Core Controllers, JWT Bearer, Scalar UI (OpenAPI), Serilog           |
+| Application| MediatR (CQRS), FluentValidation, Pipeline Behaviors (Validation + Logging) |
 | Domain     | Entidades ricas com regras de negócio (TotalAmount, Cancelamento)           |
 | Infrastructure | Entity Framework Core + SQLite, Repositórios, AuthService (JWT)         |
 | Tests      | xUnit, FluentAssertions, Moq, Microsoft.AspNetCore.Mvc.Testing              |
@@ -341,7 +341,7 @@ Resultados em http://localhost:9000/dashboard?id=challenge-nttdata.
 ## Decisões Técnicas
 
 - **Records para DTOs/Commands/Queries**: Imutabilidade, `with` expressions, value equality para asserts em testes.
-- **ValidationBehavior (pipeline)**: Validação automática de todos os commands/queries antes do handler — sem try-catch espalhados.
+- **Serilog + LoggingBehavior (pipeline)**: Logging estruturado de todos os requests/responses com tempo de execução via pipeline do MediatR. Console sink configurado com nível `Information` por padrão, `Warning` para Microsoft.AspNetCore.
 - **Global Exception Handler Middleware**: Tratamento centralizado de `ValidationException` (400), `KeyNotFoundException` (404), `InvalidOperationException` (409), demais (500).
 - **EnsureCreated()**: Criação automática do banco na inicialização — simples e direto para desenvolvimento.
 - **Scalar UI**: Interface moderna e recomendada pela Microsoft para .NET 10, substituindo SwaggerUI.
