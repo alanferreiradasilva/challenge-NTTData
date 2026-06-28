@@ -7,7 +7,10 @@ COPY Challenge.Domain/Challenge.Domain.csproj Challenge.Domain/
 COPY Challenge.Infrastructure/Challenge.Infrastructure.csproj Challenge.Infrastructure/
 RUN dotnet restore Challenge.API/Challenge.API.csproj
 
-COPY . .
+COPY Challenge.Domain/ Challenge.Domain/
+COPY Challenge.Application/ Challenge.Application/
+COPY Challenge.Infrastructure/ Challenge.Infrastructure/
+COPY Challenge.API/ Challenge.API/
 WORKDIR /src/Challenge.API
 RUN dotnet publish Challenge.API.csproj -c Release -o /app/publish
 
@@ -21,5 +24,7 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 VOLUME /app/data
 
 COPY --from=build /app/publish .
+
+USER app
 
 ENTRYPOINT ["dotnet", "Challenge.API.dll"]

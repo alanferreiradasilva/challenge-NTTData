@@ -18,6 +18,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         _connection = new SqliteConnection("DataSource=:memory:");
         _connection.Open();
 
+        builder.UseSetting("Jwt:Secret", "aK9mP4xR7vB2nL5qW8yC1hJ3fT6uE0iG");
         builder.ConfigureTestServices(services =>
         {
             var descriptor = services.SingleOrDefault(

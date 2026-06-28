@@ -12,7 +12,8 @@ public class AuthService : IAuthService
     private readonly JwtSettings _settings;
 
     private const string FixedEmail = "dev@martech.com";
-    private const string FixedPassword = "Senha@123";
+    private static readonly string UserHash =
+        "$2a$11$tq.rOwrTRY/otMgjlubXme19B5pvNRbyztddHqrEnx/GrS4Vgeqzq";
 
     public AuthService(JwtSettings settings)
     {
@@ -21,7 +22,7 @@ public class AuthService : IAuthService
 
     public Task<AuthResult?> LoginAsync(string email, string password)
     {
-        if (email != FixedEmail || password != FixedPassword)
+        if (email != FixedEmail || !BCrypt.Net.BCrypt.Verify(password, UserHash))
             return Task.FromResult<AuthResult?>(null);
 
         var tokenHandler = new JwtSecurityTokenHandler();
