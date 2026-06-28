@@ -98,19 +98,186 @@ O banco SQLite é persistido em um volume Docker (`challenge_data`).
 | GET    | `/api/orders/{id}`        | ✅   | Busca pedido por ID              |
 | PATCH  | `/api/orders/{id}/cancel` | ✅   | Cancela pedido (se `Pending`)    |
 
-### Exemplos
+## Consumo das APIs
+
+### Autenticação
+
+**POST** `/auth/login`
+
+Request:
+```json
+{
+  "email": "dev@martech.com",
+  "password": "Senha@123"
+}
+```
+
+Response `200 OK`:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "expiresAt": "2026-06-28T14:00:00Z"
+}
+```
+
+Response `401 Unauthorized`:
+*(sem body)*
+
+---
+
+### Pedidos
+
+> Todos os endpoints de pedidos exigem o header `Authorization: Bearer {token}`.
+
+#### Criar Pedido
+
+**POST** `/api/orders`
+
+Request:
+```json
+{
+  "customerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "items": [
+    {
+      "productName": "Notebook",
+      "quantity": 2,
+      "unitPrice": 25.50
+    }
+  ]
+}
+```
+
+Response `201 Created`:
+```json
+{
+  "id": "a1b2c3d4-...-..."
+}
+```
+
+Response `400 Bad Request` (exemplo — items vazio):
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+  "title": "Bad Request",
+  "status": 400,
+  "errors": {
+    "Items": ["Order must have at least one item."]
+  }
+}
+```
+
+#### Listar Pedidos
+
+**GET** `/api/orders?page=1&pageSize=10`
+
+Response `200 OK`:
+```json
+{
+  "items": [
+    {
+      "id": "a1b2c3d4-...-...",
+      "customerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "status": "Pending",
+      "createdAt": "2026-06-28T12:00:00Z",
+      "totalAmount": 51.00,
+      "items": [
+        {
+          "id": "b2c3d4e5-...-...",
+          "productName": "Notebook",
+          "quantity": 2,
+          "unitPrice": 25.50
+        }
+      ]
+    }
+  ],
+  "page": 1,
+  "pageSize": 10,
+  "totalCount": 1,
+  "totalPages": 1
+}
+```
+
+#### Obter Pedido por ID
+
+**GET** `/api/orders/{id}`
+
+Response `200 OK`:
+```json
+{
+  "id": "a1b2c3d4-...-...",
+  "customerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "status": "Pending",
+  "createdAt": "2026-06-28T12:00:00Z",
+  "totalAmount": 51.00,
+  "items": [
+    {
+      "id": "b2c3d4e5-...-...",
+      "productName": "Notebook",
+      "quantity": 2,
+      "unitPrice": 25.50
+    }
+  ]
+}
+```
+
+Response `404 Not Found`:
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Order with id a1b2c3d4-...-... not found."
+}
+```
+
+#### Cancelar Pedido
+
+**PATCH** `/api/orders/{id}/cancel`
+
+Response `204 No Content`:
+*(sem body)*
+
+Response `409 Conflict` (pedido já não está `Pending`):
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+  "title": "Conflict",
+  "status": 409,
+  "detail": "Only orders with Pending status can be cancelled."
+}
+```
+
+---
+
+### Exemplos com cURL
 
 ```bash
-# Login
-curl -s -X POST http://localhost:5217/auth/login \
+# 1. Login
+TOKEN=$(curl -s -X POST http://localhost:5217/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"dev@martech.com","password":"Senha@123"}'
+  -d '{"email":"dev@martech.com","password":"Senha@123"}' \
+  | jq -r '.token')
 
-# Criar pedido (substitua {token} pelo JWT recebido)
+# 2. Criar pedido
 curl -s -X POST http://localhost:5217/api/orders \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer {token}" \
-  -d '{"customerId":"3fa85f64-5717-4562-b3fc-2c963f66afa6","items":[{"productName":"Notebook","quantity":2,"unitPrice":25.50}]}'
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "customerId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "items": [{"productName": "Notebook", "quantity": 2, "unitPrice": 25.50}]
+  }'
+
+# 3. Listar pedidos
+curl -s "http://localhost:5217/api/orders?page=1&pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+
+# 4. Buscar pedido por ID (substitua {id} pelo retornado no passo 2)
+curl -s http://localhost:5217/api/orders/{id} \
+  -H "Authorization: Bearer $TOKEN"
+
+# 5. Cancelar pedido
+curl -s -X PATCH http://localhost:5217/api/orders/{id}/cancel \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
