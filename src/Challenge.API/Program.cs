@@ -2,7 +2,6 @@ using Challenge.API.Extensions;
 using Challenge.Application;
 using Challenge.Infrastructure;
 using Challenge.Infrastructure.Services;
-using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,10 +15,10 @@ builder.Services
         jwtSettings)
     .AddApiAuthentication(jwtSettings)
     .AddApiOpenApi()
+    .AddApiTelemetry()
     .AddControllers();
 
-builder.Host.UseSerilog((ctx, cfg) =>
-    cfg.ReadFrom.Configuration(ctx.Configuration));
+builder.Host.UseApiSerilog();
 
 var app = builder.Build();
 

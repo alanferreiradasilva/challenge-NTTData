@@ -8,8 +8,8 @@ Backend de um sistema de gestão de pedidos para e-commerce, construído com **.
 
 | Camada     | Tecnologias                                                                 |
 | ---------- | --------------------------------------------------------------------------- |
-| API        | ASP.NET Core Controllers, JWT Bearer, Scalar UI (OpenAPI), Serilog           |
-| Application| MediatR (CQRS), FluentValidation, Pipeline Behaviors (Validation + Logging) |
+| API        | ASP.NET Core Controllers, JWT Bearer, Scalar UI (OpenAPI), Serilog, OpenTelemetry |
+| Application| MediatR (CQRS), FluentValidation, Pipeline Behaviors (Validation + Logging)    |
 | Domain     | Entidades ricas com regras de negócio (TotalAmount, Cancelamento)           |
 | Infrastructure | Entity Framework Core + SQLite, Repositórios, AuthService (JWT)         |
 | Tests      | xUnit, FluentAssertions, Moq, Microsoft.AspNetCore.Mvc.Testing              |
@@ -100,6 +100,28 @@ Cada request/response é logado automaticamente com tempo de execução:
 ```
 
 Para sair do modo follow, pressione `Ctrl+C`.
+
+### Traces com OpenTelemetry
+
+A API está instrumentada com **OpenTelemetry** para exportar traces de todas as requisições HTTP para o console:
+
+```bash
+# Localmente — os traces aparecem no terminal junto com os logs do Serilog
+dotnet run --project src/Challenge.API --launch-profile http
+
+# Via Docker
+docker compose logs api -f
+```
+
+Saída esperada (trace de cada requisição):
+
+```
+Activity.TraceId:      9dde3f98bf6b9d2d5b71c83c320f8b5b
+Activity.SpanId:       90c71ad616df7783
+Activity.DisplayName:  POST api/orders
+Activity.Kind:         Server
+Activity.Duration:     00:00:00.8228154
+```
 
 ---
 
@@ -357,6 +379,7 @@ Resultados em http://localhost:9000/dashboard?id=challenge-nttdata.
 
 - **Records para DTOs/Commands/Queries**: Imutabilidade, `with` expressions, value equality para asserts em testes.
 - **Serilog + LoggingBehavior (pipeline)**: Logging estruturado de todos os requests/responses com tempo de execução via pipeline do MediatR. Console sink configurado com nível `Information` por padrão, `Warning` para Microsoft.AspNetCore.
+- **OpenTelemetry**: Tracing automático de todas as requisições HTTP com export para console via `AddAspNetCoreInstrumentation()`.
 - **Global Exception Handler Middleware**: Tratamento centralizado de `ValidationException` (400), `KeyNotFoundException` (404), `InvalidOperationException` (409), demais (500).
 - **EnsureCreated()**: Criação automática do banco na inicialização — simples e direto para desenvolvimento.
 - **Scalar UI**: Interface moderna e recomendada pela Microsoft para .NET 10, substituindo SwaggerUI.

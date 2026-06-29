@@ -2,6 +2,9 @@ using System.Text;
 using Challenge.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Serilog;
 
 namespace Challenge.API.Extensions;
 
@@ -37,5 +40,26 @@ public static class ServiceExtensions
         services.AddOpenApi();
 
         return services;
+    }
+
+    public static IServiceCollection AddApiTelemetry(
+        this IServiceCollection services)
+    {
+        services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService("Challenge.API"))
+            .WithTracing(tracing => tracing
+                .AddAspNetCoreInstrumentation()
+                .AddConsoleExporter());
+
+        return services;
+    }
+
+    public static IHostBuilder UseApiSerilog(
+        this IHostBuilder host)
+    {
+        host.UseSerilog((ctx, cfg) =>
+            cfg.ReadFrom.Configuration(ctx.Configuration));
+
+        return host;
     }
 }
