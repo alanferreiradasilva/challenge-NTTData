@@ -73,10 +73,25 @@ A API inicia em `http://localhost:5217`. Em ambiente **Development**:
 | ------------------ | --------- |
 | dev@martech.com    | Senha@123 |
 
+### Observabilidade
+
+Ao rodar localmente, o terminal exibe simultaneamente:
+
+**Serilog** — logs de cada request/response com tempo de execução:
+```
+[23:14:24 INF] Handling CancelOrderCommand { OrderId: "2b9b2a04-..." }
+[23:14:25 INF] Handled CancelOrderCommand in 803ms
+```
+
+**OpenTelemetry** — traces de cada requisição HTTP:
+```
+Activity.DisplayName:  POST api/orders
+Activity.Duration:     00:00:00.8228154
+```
+
 ---
 
 ## Como Rodar com Docker
-
 ```bash
 # Construir e iniciar o container
 docker compose up --build
@@ -324,6 +339,9 @@ curl -s -X PATCH http://localhost:5217/api/orders/{id}/cancel \
 ```bash
 # Todos os testes (unitários + integração)
 dotnet test tests/Challenge.Tests
+
+# Testes com cobertura (gerado via coverlet + opencover)
+dotnet test tests/Challenge.Tests /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 ```
 
 - **11 testes unitários**: handlers (Login, CreateOrder, CancelOrder, GetOrders, GetOrderById)
@@ -361,11 +379,14 @@ Acessar http://localhost:9000, logar com `admin` / `admin` e trocar a senha.
 # Instalar o scanner (uma vez)
 dotnet tool install --global dotnet-sonarscanner
 
-# Iniciar análise
-dotnet sonarscanner begin /k:"challenge-nttdata" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="SEU_TOKEN"
+# Iniciar análise (com cobertura)
+dotnet sonarscanner begin /k:"challenge-nttdata" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="SEU_TOKEN" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
 
 # Compilar
-dotnet build src/Challenge.API/Challenge.API.csproj
+dotnet build
+
+# Executar testes com cobertura
+dotnet test tests/Challenge.Tests /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
 # Finalizar e enviar resultados
 dotnet sonarscanner end /d:sonar.login="SEU_TOKEN"
